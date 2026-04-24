@@ -14,9 +14,9 @@ from app.models import DifficultyLevel
 from app.storage.store import save_puzzle
 
 try:
-    from anthropic import AsyncAnthropic
+    from google import genai
 except ImportError:
-    AsyncAnthropic = None  # type: ignore[assignment]
+    genai = None  # type: ignore[assignment]
 
 _fallback_puzzles = json.loads(
     (Path(__file__).parent.parent / "storage" / "fallback_puzzles.json").read_text(
@@ -43,7 +43,9 @@ REQUIRED_KEYS = {
 
 
 def build_user_prompt(diff: str, fc_score: int, difficulty: str) -> str:
-    return f"""Code diff submitted by student:
+    return f"""{SYSTEM_PROMPT}
+
+Code diff submitted by student:
 {diff}
 
 Complexity score (Fc): {fc_score}
@@ -67,21 +69,13 @@ Return exactly this JSON schema:
 def _get_client():
     global _client
 
-    if AsyncAnthropic is None or not settings.ANTHROPIC_API_KEY:
+    if genai is None or not settings.GEMINI_API_KEY:
         return None
 
     if _client is None:
-        _client = AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
+        _client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
     return _client
-
-
-def _extract_response_text(response: Any) -> str:
-    parts: list[str] = []
-    for block in getattr(response, "content", []):
-        if getattr(block, "type", "") == "text":
-            parts.append(block.text)
-    return "".join(parts).strip()
 
 
 def get_fallback_puzzle(difficulty: DifficultyLevel | str) -> dict[str, Any]:
@@ -104,26 +98,22 @@ def _validate_puzzle_shape(puzzle: dict[str, Any]) -> dict[str, Any]:
     return puzzle
 
 
-async def _generate_with_claude(
+async def _generate_with_gemini(
     diff: str, fc_score: int, difficulty: DifficultyLevel
 ) -> dict[str, Any]:
     client = _get_client()
     if client is None:
-        raise RuntimeError("Anthropic client unavailable.")
+        raise RuntimeError("Gemini client unavailable.")
 
-    response = await client.messages.create(
-        model=settings.ANTHROPIC_MODEL,
-        max_tokens=500,
-        system=SYSTEM_PROMPT,
-        messages=[
-            {
-                "role": "user",
-                "content": build_user_prompt(diff, fc_score, difficulty.value),
-            }
-        ],
+    prompt = build_user_prompt(diff, fc_score, difficulty.value)
+
+    response = await client.aio.models.generate_content(
+        model=settings.GEMINI_MODEL,
+        contents=prompt,
     )
-    raw = _extract_response_text(response)
-    raw = re.sub(r"```(?:json)?", "", raw).strip()
+
+    raw = response.text.strip()
+    raw = re.sub(r"```(?:json)?", "", raw).strip().rstrip("`").strip()
     return _validate_puzzle_shape(json.loads(raw))
 
 
@@ -163,13 +153,13 @@ async def generate_puzzle(
 ) -> tuple[str, dict[str, str]]:
     try:
         puzzle = await asyncio.wait_for(
-            _generate_with_claude(diff, fc_score, difficulty),
+            _generate_with_gemini(diff, fc_score, difficulty),
             timeout=settings.API_TIMEOUT_SECONDS,
         )
         return _issue_puzzle(puzzle, fc_score, difficulty, student_id)
     except Exception as exc:
         logger.warning(
-            "Claude puzzle generation failed (%s: %s); falling back to static puzzle.",
+            "Gemini puzzle generation failed (%s: %s); falling back to static puzzle.",
             type(exc).__name__,
             exc,
         )

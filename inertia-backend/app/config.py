@@ -4,8 +4,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    ANTHROPIC_API_KEY: str | None = None
-    ANTHROPIC_MODEL: str = "claude-sonnet-4-20250514"
+    GEMINI_API_KEY: str | None = None
+    GEMINI_MODEL: str = "gemini-2.5-pro"
     JWT_SECRET: str = "inertia-super-secret-change-in-prod"
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRE_MINUTES: int = 5

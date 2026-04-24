@@ -3,12 +3,20 @@ from fastapi import APIRouter, HTTPException
 from app.config import settings
 from app.models import AuditRequest, AuditResponse, DifficultyLevel
 from app.services.ast_parser import compute_complexity, get_difficulty
+from app.storage.store import is_locked_out
 
 router = APIRouter(prefix="/audit", tags=["audit"])
 
 
 @router.post("", response_model=AuditResponse)
 def audit_diff(req: AuditRequest) -> AuditResponse:
+    locked, remaining = is_locked_out(req.student_id)
+    if locked:
+        raise HTTPException(
+            status_code=423,
+            detail=f"Student is in reflection period. {remaining}s remaining.",
+        )
+
     if not req.diff.strip():
         raise HTTPException(status_code=400, detail="Empty diff - nothing to audit.")
 
