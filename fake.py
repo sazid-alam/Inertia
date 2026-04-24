@@ -18,3 +18,10 @@ def fake_code_for_testing2():
             result -= 1
     return result
     
+def fake_code_for_testing3():
+    result = 0
+    for i in range(10):
+        result += i
+        if result > 5:
+            result -= 1
+    return result
