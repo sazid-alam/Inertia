@@ -59,6 +59,7 @@ class AttemptLogEntry(BaseModel):
     success: bool
     fc_score: int = 0
     solve_time: float = 0
+    concept: str = "OTHER"
 
 
 class StudentStatus(BaseModel):
@@ -69,6 +70,7 @@ class StudentStatus(BaseModel):
     lockout_seconds: int = 0
     last_fc_score: int | None = None
     is_suspicious: bool
+    was_correct: bool | None = None
     recent_attempts: list[AttemptLogEntry] = Field(default_factory=list)
 
 

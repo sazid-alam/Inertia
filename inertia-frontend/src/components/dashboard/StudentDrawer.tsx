@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { clearLockout } from '../../api/dashboard'
+import { useCountdown } from '../../hooks/useCountdown'
 import type { StudentStatus } from '../../types'
 import { formatSolveTime, formatTimestamp } from '../../utils/format'
 import { AttemptTimeline } from './AttemptTimeline'
@@ -13,6 +14,11 @@ interface StudentDrawerProps {
 export function StudentDrawer({ student, onClose, onLockoutCleared }: StudentDrawerProps) {
   const [clearing, setClearing] = useState(false)
   const [clearError, setClearError] = useState<string | null>(null)
+
+  const remainingLockout = useCountdown(
+    student.lockout_seconds,
+    () => { /* drawer will show 0 naturally; parent polling refreshes data */ },
+  )
 
   const handleClearLockout = async () => {
     setClearing(true)
@@ -56,12 +62,12 @@ export function StudentDrawer({ student, onClose, onLockoutCleared }: StudentDra
         </div>
       </div>
 
-      {student.lockout_seconds > 0 && (
+      {remainingLockout > 0 && (
         <div className="mt-4 rounded border border-amber-300 bg-amber-50 p-3">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-semibold text-amber-800">Locked out</p>
-              <p className="text-xs text-amber-700">{student.lockout_seconds}s remaining</p>
+              <p className="text-xs text-amber-700">{remainingLockout}s remaining</p>
             </div>
             <button
               type="button"
@@ -107,6 +113,9 @@ export function StudentDrawer({ student, onClose, onLockoutCleared }: StudentDra
                 <div className="mt-1 text-slate-700">
                   Fc score: <strong>{attempt.fc_score}</strong> · Solve time:{' '}
                   <strong>{formatSolveTime(attempt.solve_time)}</strong>
+                  {attempt.concept && attempt.concept !== 'OTHER' && (
+                    <> · Concept: <strong>{attempt.concept}</strong></>
+                  )}
                 </div>
               </div>
             ))

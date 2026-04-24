@@ -31,6 +31,7 @@ export interface AttemptLogEntry {
   success: boolean
   fc_score: number
   solve_time: number
+  concept: string
 }
 
 export interface StudentStatus {
@@ -41,6 +42,7 @@ export interface StudentStatus {
   lockout_seconds: number
   last_fc_score: number | null
   is_suspicious: boolean
+  was_correct: boolean | null
   recent_attempts: AttemptLogEntry[]
 }
 
