@@ -180,6 +180,12 @@ def is_locked_out(student_id: str) -> tuple[bool, int]:
     return remaining > 0, max(0, remaining)
 
 
+def clear_lockout(student_id: str) -> None:
+    entry = _load_attempt_entry(student_id)
+    entry["locked_until"] = 0.0
+    _save_attempt_entry(student_id, entry)
+
+
 def _format_locked_until(timestamp: float | int) -> str | None:
     if not timestamp:
         return None

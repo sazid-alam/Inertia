@@ -6,6 +6,7 @@ from fastapi.responses import StreamingResponse
 
 from app.models import DashboardResponse
 from app.storage.store import (
+    clear_lockout,
     get_active_lockouts,
     get_all_statuses,
     get_authenticity_records,
@@ -43,3 +44,9 @@ async def stream_status() -> StreamingResponse:
 @router.get("/heatmap")
 def get_heatmap_data() -> dict:
     return {"heatmap": get_heatmap()}
+
+
+@router.delete("/lockout/{student_id}")
+def clear_student_lockout(student_id: str) -> dict[str, str]:
+    clear_lockout(student_id)
+    return {"message": f"Lockout cleared for {student_id}."}
