@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     JWT_SECRET: str = "inertia-super-secret-change-in-prod"
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRE_MINUTES: int = 5
+    CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:5173"]
     USE_REDIS: bool = False
     REDIS_URL: str = "redis://localhost:6379/0"
     MAX_DIFF_LINES: int = 200

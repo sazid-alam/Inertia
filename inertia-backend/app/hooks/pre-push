@@ -87,11 +87,32 @@ fi
 
 SUCCESS=$(printf '%s' "$VERIFY_RESPONSE" | "$PYTHON_BIN" -c "import json,sys; print(json.load(sys.stdin)['success'])")
 MESSAGE=$(printf '%s' "$VERIFY_RESPONSE" | "$PYTHON_BIN" -c "import json,sys; print(json.load(sys.stdin)['message'])")
+JWT_TOKEN=$(printf '%s' "$VERIFY_RESPONSE" | "$PYTHON_BIN" -c "import json,sys; d=json.load(sys.stdin); print(d.get('jwt_token') or '')")
 
 echo ""
 echo "$MESSAGE"
 
 if [ "$SUCCESS" = "True" ]; then
+    if [ -z "$JWT_TOKEN" ]; then
+        echo "[INERTIA] No JWT token received. Push blocked."
+        exit 1
+    fi
+
+    # Validate the issued JWT against the server before allowing the push.
+    TOKEN_CHECK=$(curl -sf "$API_BASE/verify/token" \
+        -H "Authorization: Bearer $JWT_TOKEN")
+
+    if [ $? -ne 0 ] || [ -z "$TOKEN_CHECK" ]; then
+        echo "[INERTIA] JWT validation failed. Push blocked."
+        exit 1
+    fi
+
+    VALID=$(printf '%s' "$TOKEN_CHECK" | "$PYTHON_BIN" -c "import json,sys; print(json.load(sys.stdin).get('valid', False))")
+    if [ "$VALID" != "True" ]; then
+        echo "[INERTIA] JWT rejected by server. Push blocked."
+        exit 1
+    fi
+
     echo "[INERTIA] Push proceeding."
     exit 0
 fi

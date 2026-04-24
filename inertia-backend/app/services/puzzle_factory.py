@@ -1,10 +1,13 @@
 import asyncio
 import json
+import logging
 import random
 import re
 import uuid
 from pathlib import Path
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 from app.config import settings
 from app.models import DifficultyLevel
@@ -164,5 +167,10 @@ async def generate_puzzle(
             timeout=settings.API_TIMEOUT_SECONDS,
         )
         return _issue_puzzle(puzzle, fc_score, difficulty, student_id)
-    except Exception:
+    except Exception as exc:
+        logger.warning(
+            "Claude puzzle generation failed (%s: %s); falling back to static puzzle.",
+            type(exc).__name__,
+            exc,
+        )
         return issue_fallback_puzzle(fc_score, difficulty, student_id)

@@ -64,11 +64,20 @@
   },
   {
     "difficulty": "HARD",
-    "function_name": "linear_search",
-    "setup": "arr = [5, 3, 8, 1], target = 8",
-    "breakpoint": "Right before the function returns success",
-    "question": "At what index does the loop find target = 8?",
-    "answer": "2",
-    "explanation": "The loop checks indexes 0 and 1 first, then finds 8 at index 2."
+    "function_name": "fib_dp",
+    "setup": "dp = [0] * 7, dp[0] = 0, dp[1] = 1, then fib_dp(6) fills the table iteratively with dp[i] = dp[i-1] + dp[i-2]",
+    "breakpoint": "After the loop body executes for i = 5",
+    "question": "What is dp[5] immediately after the iteration where i = 5?",
+    "answer": "5",
+    "explanation": "dp[5] = dp[4] + dp[3] = 3 + 2 = 5 in the standard Fibonacci DP sequence."
+  },
+  {
+    "difficulty": "HARD",
+    "function_name": "lomuto_partition",
+    "setup": "arr = [3, 1, 4, 5, 2], lo = 0, hi = 4; Lomuto partition uses pivot = arr[hi] = 2, store index i starts at lo - 1 = -1",
+    "breakpoint": "After the partition loop completes and the pivot is swapped into its final position",
+    "question": "What is the final index of the pivot (value 2) after partitioning?",
+    "answer": "1",
+    "explanation": "Only arr[1]=1 is ≤ pivot=2, so the store index increments to 1; the pivot then swaps with arr[1], landing at index 1."
   }
 ]
