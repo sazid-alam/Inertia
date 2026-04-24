@@ -1,10 +1,10 @@
 import time
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Header
 
 from app.models import DifficultyLevel, VerifyRequest, VerifyResponse
 from app.services.ast_parser import get_timer_seconds
-from app.services.jwt_service import sign_jwt
+from app.services.jwt_service import sign_jwt, verify_jwt
 from app.storage.store import delete_puzzle, is_locked_out, load_puzzle, record_attempt
 
 router = APIRouter(prefix="/verify", tags=["verify"])
@@ -67,3 +67,12 @@ def verify_answer(req: VerifyRequest) -> VerifyResponse:
             f"Explanation: {puzzle.get('explanation', 'Review your logic.')}"
         ),
     )
+
+
+@router.get("/token")
+def validate_token(authorization: str = Header(...)):
+    token = authorization.removeprefix("Bearer ").strip()
+    payload = verify_jwt(token)
+    if not payload:
+        raise HTTPException(status_code=401, detail="Invalid or expired PoT token.")
+    return {"valid": True, "student_id": payload["sub"], "token_id": payload["token_id"]}
