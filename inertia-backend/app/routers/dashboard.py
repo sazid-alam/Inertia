@@ -9,6 +9,7 @@ from app.storage.store import (
     get_active_lockouts,
     get_all_statuses,
     get_authenticity_records,
+    get_heatmap,
 )
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
@@ -37,3 +38,8 @@ async def stream_status() -> StreamingResponse:
             await asyncio.sleep(30)
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+
+@router.get("/heatmap")
+def get_heatmap_data() -> dict:
+    return {"heatmap": get_heatmap()}

@@ -41,11 +41,13 @@ def verify_answer(req: VerifyRequest) -> VerifyResponse:
     submitted_answer = req.answer.strip().lower()
     correct = submitted_answer == expected_answer
 
+    concept = puzzle.get("concept", "OTHER")
     entry = record_attempt(
         req.student_id,
         success=correct,
         fc_score=int(puzzle.get("fc_score", 0)),
         solve_time=solve_time,
+        concept=concept,
     )
     delete_puzzle(req.token_id)
 

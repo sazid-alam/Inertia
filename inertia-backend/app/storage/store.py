@@ -6,6 +6,8 @@ from typing import Any
 from app.config import settings
 from app.services.lockout import lockout_seconds_for_failures, suspicious_solve
 
+CONCEPTS = ["RECURSION", "DYNAMIC_PROGRAMMING", "SORTING", "GRAPHS", "TREES", "LOOPS", "OTHER"]
+
 try:
     import redis
 except ImportError:
@@ -126,6 +128,7 @@ def record_attempt(
     success: bool,
     fc_score: int = 0,
     solve_time: float = 0,
+    concept: str = "OTHER",
 ) -> dict[str, Any]:
     entry = _load_attempt_entry(student_id)
     entry["count"] += 1
@@ -136,6 +139,7 @@ def record_attempt(
             "success": success,
             "fc_score": fc_score,
             "solve_time": round(solve_time, 3),
+            "concept": concept,
         }
     )
     entry["log"] = entry["log"][-20:]
@@ -246,6 +250,20 @@ def get_authenticity_records() -> list[dict[str, Any]]:
             }
         )
     return records
+
+
+def get_heatmap() -> dict[str, dict[str, dict[str, int]]]:
+    result: dict[str, dict[str, dict[str, int]]] = {}
+    for student_id in sorted(_get_attempt_student_ids()):
+        entry = _load_attempt_entry(student_id)
+        result[student_id] = {}
+        for concept in CONCEPTS:
+            attempts = [e for e in entry.get("log", []) if e.get("concept") == concept]
+            result[student_id][concept] = {
+                "attempts": len(attempts),
+                "failures": sum(1 for e in attempts if not e["success"]),
+            }
+    return result
 
 
 def clear_all_state() -> None:
