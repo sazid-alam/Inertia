@@ -158,9 +158,11 @@ async def generate_puzzle(
         )
         return _issue_puzzle(puzzle, fc_score, difficulty, student_id)
     except Exception as exc:
+        error_msg = f"{type(exc).__name__}: {exc}"
         logger.warning(
-            "Gemini puzzle generation failed (%s: %s); falling back to static puzzle.",
-            type(exc).__name__,
-            exc,
+            "Gemini puzzle generation failed (%s); falling back to static puzzle.",
+            error_msg,
         )
-        return issue_fallback_puzzle(fc_score, difficulty, student_id)
+        puzzle = get_fallback_puzzle(difficulty)
+        puzzle["setup"] = f"GEMINI ERROR -> {error_msg} | {puzzle.get('setup')}"
+        return _issue_puzzle(puzzle, fc_score, difficulty, student_id)
