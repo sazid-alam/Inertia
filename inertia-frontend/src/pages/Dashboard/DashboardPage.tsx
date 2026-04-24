@@ -99,6 +99,7 @@ export function DashboardPage() {
         <StudentDrawer
           student={selectedStudent}
           onClose={() => setSelectedStudentId(null)}
+          onLockoutCleared={() => { void refreshStatus() }}
         />
       ) : null}
     </div>
