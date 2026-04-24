@@ -160,6 +160,7 @@ def record_attempt(
             )
     else:
         entry["locked_until"] = 0.0
+        entry["failed"] = 0
         _save_solve(
             student_id,
             {
