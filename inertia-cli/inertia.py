@@ -37,7 +37,7 @@ def cmd_init(args):
         
     config = load_config()
     config["student_id"] = student_id
-    config["api_base"] = "https://inertia-production.up.railway.app"
+    config["api_base"] = "https://inertia-production-e090.up.railway.app"
     config["frontend_base"] = "https://inertia-tau.vercel.app"
     save_config(config)
     
@@ -57,7 +57,7 @@ def cmd_status(args):
         print("Inertia is not initialized. Run 'inertia init'.")
         return
         
-    api_base = config.get("api_base", "https://inertia-production.up.railway.app")
+    api_base = config.get("api_base", "https://inertia-production-e090.up.railway.app")
     student_id = config["student_id"]
     
     print(f"Student ID: {student_id}")
@@ -103,7 +103,7 @@ def cmd_doctor(args):
         print("❌ Global Git hooks are not configured.")
         
     # 3. Server Check
-    api_base = config.get("api_base", "https://inertia-production.up.railway.app")
+    api_base = config.get("api_base", "https://inertia-production-e090.up.railway.app")
     try:
         req = urllib.request.Request(f"{api_base}/health")
         with urllib.request.urlopen(req, timeout=5) as resp:

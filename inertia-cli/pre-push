@@ -3,7 +3,7 @@
 
 set -u
 
-API_BASE="${INERTIA_API:-https://inertia-production.up.railway.app}"
+API_BASE="${INERTIA_API:-https://inertia-production-e090.up.railway.app}"
 FRONTEND_BASE="${INERTIA_FRONTEND:-https://inertia-tau.vercel.app}"
 STUDENT_ID="${INERTIA_STUDENT_ID:-$(git config user.email)}"
 PYTHON_BIN="${INERTIA_PYTHON_BIN:-python3}"
