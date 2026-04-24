@@ -10,3 +10,5 @@ joy babar aro update eseche
 
 
 first push validity check 
+
+python ke python3 kora holo 
