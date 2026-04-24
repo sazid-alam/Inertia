@@ -1,0 +1,94 @@
+#!/bin/bash
+# INERTIA.EDU pre-push hook
+
+set -u
+
+API_BASE="${INERTIA_API:-https://inertia-production.up.railway.app}"
+FRONTEND_BASE="${INERTIA_FRONTEND:-https://inertia-tau.vercel.app}"
+STUDENT_ID="${INERTIA_STUDENT_ID:-$(git config user.email)}"
+PYTHON_BIN="${INERTIA_PYTHON_BIN:-python3}"
+
+echo "[INERTIA] Analyzing commit..."
+
+DIFF=$(git diff HEAD~1 HEAD 2>/dev/null || git diff --cached)
+
+if [ -z "$DIFF" ]; then
+    echo "[INERTIA] No diff detected. Push allowed."
+    exit 0
+fi
+
+DIFF_JSON=$(printf '%s' "$DIFF" | "$PYTHON_BIN" -c 'import json,sys; print(json.dumps(sys.stdin.read()))')
+
+AUDIT_RESPONSE=$(curl -sf -X POST "$API_BASE/audit" \
+    -H "Content-Type: application/json" \
+    -d "{\"diff\": $DIFF_JSON, \"student_id\": \"$STUDENT_ID\"}")
+
+if [ $? -ne 0 ] || [ -z "$AUDIT_RESPONSE" ]; then
+    echo "[INERTIA] Cannot reach server. Push allowed (offline mode)."
+    exit 0
+fi
+
+FC_SCORE=$(printf '%s' "$AUDIT_RESPONSE" | "$PYTHON_BIN" -c "import json,sys; print(json.load(sys.stdin).get('complexity_score', 0))")
+REQUIRES_PUZZLE=$(printf '%s' "$AUDIT_RESPONSE" | "$PYTHON_BIN" -c "import json,sys; print(json.load(sys.stdin).get('requires_puzzle', False))")
+
+if [ "$REQUIRES_PUZZLE" != "True" ]; then
+    echo "[INERTIA] Trivial commit. Push allowed."
+    exit 0
+fi
+
+DIFFICULTY=$(printf '%s' "$AUDIT_RESPONSE" | "$PYTHON_BIN" -c "import json,sys; print(json.load(sys.stdin).get('difficulty', 'EASY'))")
+
+PUZZLE_RESPONSE=$(curl -sf -X POST "$API_BASE/puzzle" \
+    -H "Content-Type: application/json" \
+    -d "{\"diff\": $DIFF_JSON, \"fc_score\": $FC_SCORE, \"difficulty\": \"$DIFFICULTY\", \"student_id\": \"$STUDENT_ID\"}")
+
+if [ $? -ne 0 ] || [ -z "$PUZZLE_RESPONSE" ]; then
+    echo "[INERTIA] Puzzle request failed (perhaps you are locked out). Push blocked."
+    exit 1
+fi
+
+TOKEN_ID=$(printf '%s' "$PUZZLE_RESPONSE" | "$PYTHON_BIN" -c "import json,sys; print(json.load(sys.stdin).get('token_id', ''))")
+TIMER=$(printf '%s' "$PUZZLE_RESPONSE" | "$PYTHON_BIN" -c "import json,sys; print(json.load(sys.stdin).get('timer_seconds', 0))")
+
+echo ""
+echo "========================================"
+echo "🛑 PROOF-OF-THOUGHT REQUIRED"
+echo "👉 $FRONTEND_BASE/student?token=$TOKEN_ID"
+echo "========================================"
+echo "Waiting for browser verification (timeout: ${TIMER}s)..."
+
+MAX_ATTEMPTS=$((TIMER / 2 + 15))
+ATTEMPT=0
+
+while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+    sleep 2
+    STATUS_RESPONSE=$(curl -sf "$API_BASE/puzzle/$TOKEN_ID/status")
+    
+    if [ $? -ne 0 ] || [ -z "$STATUS_RESPONSE" ]; then
+        echo "[INERTIA] Server check failed. Retrying..."
+        ATTEMPT=$((ATTEMPT + 1))
+        continue
+    fi
+
+    STATUS=$(printf '%s' "$STATUS_RESPONSE" | "$PYTHON_BIN" -c "import json,sys; print(json.load(sys.stdin).get('status', ''))")
+    JWT_TOKEN=$(printf '%s' "$STATUS_RESPONSE" | "$PYTHON_BIN" -c "import json,sys; print(json.load(sys.stdin).get('jwt_token') or '')")
+    
+    if [ "$STATUS" = "verified" ] && [ -n "$JWT_TOKEN" ]; then
+        echo "[INERTIA] Browser verification successful! Validating JWT..."
+        TOKEN_CHECK=$(curl -sf "$API_BASE/verify/token" -H "Authorization: Bearer $JWT_TOKEN")
+        if [ $? -ne 0 ] || [ -z "$TOKEN_CHECK" ]; then
+            echo "[INERTIA] JWT validation failed. Push blocked."
+            exit 1
+        fi
+        echo "[INERTIA] JWT valid. Push proceeding."
+        exit 0
+    elif [ "$STATUS" = "expired" ] || [ "$STATUS" = "failed" ]; then
+        echo "[INERTIA] Verification failed or expired. Push blocked."
+        exit 1
+    fi
+    
+    ATTEMPT=$((ATTEMPT + 1))
+done
+
+echo "[INERTIA] Polling timeout. Push blocked."
+exit 1

@@ -91,6 +91,33 @@ def delete_puzzle(token_id: str) -> None:
     _puzzles.pop(token_id, None)
 
 
+def _token_status_key(token_id: str) -> str:
+    return f"verified_token:{token_id}"
+
+
+def save_verified_token(token_id: str, jwt_token: str, ttl_seconds: int = 60) -> None:
+    if _use_redis():
+        client = _get_redis()
+        client.setex(_token_status_key(token_id), ttl_seconds, jwt_token)
+        return
+
+    _puzzles[f"jwt_{token_id}"] = {"jwt": jwt_token, "expires_at": _now() + ttl_seconds}
+
+
+def load_verified_token(token_id: str) -> str | None:
+    if _use_redis():
+        client = _get_redis()
+        return client.get(_token_status_key(token_id))
+
+    record = _puzzles.get(f"jwt_{token_id}")
+    if not record:
+        return None
+    if _now() > float(record["expires_at"]):
+        del _puzzles[f"jwt_{token_id}"]
+        return None
+    return str(record["jwt"])
+
+
 def _load_attempt_entry(student_id: str) -> dict[str, Any]:
     if _use_redis():
         client = _get_redis()

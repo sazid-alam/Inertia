@@ -1,9 +1,15 @@
 from fastapi import APIRouter, HTTPException
 
-from app.models import DifficultyLevel, PuzzleRequest, PuzzleResponse
+from app.models import (
+    DifficultyLevel,
+    PublicPuzzleResponse,
+    PuzzleRequest,
+    PuzzleResponse,
+    PuzzleStatusResponse,
+)
 from app.services.ast_parser import get_difficulty, get_timer_seconds
 from app.services.puzzle_factory import generate_puzzle
-from app.storage.store import is_locked_out
+from app.storage.store import is_locked_out, load_puzzle, load_verified_token
 
 router = APIRouter(prefix="/puzzle", tags=["puzzle"])
 
@@ -44,3 +50,38 @@ async def request_puzzle(req: PuzzleRequest) -> PuzzleResponse:
         function_name=puzzle_data["function_name"],
         timer_seconds=get_timer_seconds(req.difficulty),
     )
+
+
+@router.get("/{token_id}", response_model=PublicPuzzleResponse)
+def get_puzzle(token_id: str) -> PublicPuzzleResponse:
+    puzzle = load_puzzle(token_id)
+    if not puzzle:
+        raise HTTPException(
+            status_code=404, detail="Puzzle not found. It may have expired or never existed."
+        )
+
+    return PublicPuzzleResponse(
+        setup=puzzle.get("setup", ""),
+        question=puzzle.get("question", ""),
+        function_name=puzzle.get("function_name", ""),
+        timer_seconds=get_timer_seconds(DifficultyLevel(puzzle.get("difficulty", "EASY"))),
+        student_id=puzzle.get("student_id", ""),
+    )
+
+
+@router.get("/{token_id}/status", response_model=PuzzleStatusResponse)
+def get_puzzle_status(token_id: str) -> PuzzleStatusResponse:
+    # Check if a token exists for verification
+    jwt_token = load_verified_token(token_id)
+    if jwt_token:
+        return PuzzleStatusResponse(
+            status="verified", jwt_token=jwt_token, message="Verification successful."
+        )
+
+    # Check if the puzzle is still pending
+    puzzle = load_puzzle(token_id)
+    if puzzle:
+        return PuzzleStatusResponse(status="pending", message="Waiting for verification.")
+
+    # Neither the puzzle nor the verified token exist
+    return PuzzleStatusResponse(status="expired", message="Puzzle expired or failed.")

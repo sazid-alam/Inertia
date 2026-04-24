@@ -40,6 +40,20 @@ class PuzzleResponse(BaseModel):
     timer_seconds: int
 
 
+class PublicPuzzleResponse(BaseModel):
+    setup: str
+    question: str
+    function_name: str
+    timer_seconds: int
+    student_id: str
+
+
+class PuzzleStatusResponse(BaseModel):
+    status: str
+    jwt_token: str | None = None
+    message: str | None = None
+
+
 class VerifyRequest(BaseModel):
     token_id: str
     student_id: str

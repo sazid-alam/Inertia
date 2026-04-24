@@ -5,7 +5,13 @@ from fastapi import APIRouter, HTTPException, Header
 from app.models import DifficultyLevel, VerifyRequest, VerifyResponse
 from app.services.ast_parser import get_timer_seconds
 from app.services.jwt_service import sign_jwt, verify_jwt
-from app.storage.store import delete_puzzle, is_locked_out, load_puzzle, record_attempt
+from app.storage.store import (
+    delete_puzzle,
+    is_locked_out,
+    load_puzzle,
+    record_attempt,
+    save_verified_token,
+)
 
 router = APIRouter(prefix="/verify", tags=["verify"])
 
@@ -53,6 +59,7 @@ def verify_answer(req: VerifyRequest) -> VerifyResponse:
 
     if correct:
         token = sign_jwt(req.student_id, req.token_id)
+        save_verified_token(req.token_id, token)
         return VerifyResponse(
             success=True,
             jwt_token=token,

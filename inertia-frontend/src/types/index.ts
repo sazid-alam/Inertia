@@ -18,6 +18,20 @@ export interface PuzzleResponse {
   timer_seconds: number
 }
 
+export interface PublicPuzzleResponse {
+  setup: string
+  question: string
+  function_name: string
+  timer_seconds: number
+  student_id: string
+}
+
+export interface PuzzleStatusResponse {
+  status: string
+  jwt_token: string | null
+  message: string | null
+}
+
 export interface VerifyResponse {
   success: boolean
   jwt_token: string | null
