@@ -21,12 +21,12 @@ mkdir -p "$INERTIA_HOME/bin"
 mkdir -p "$INERTIA_HOME/hooks"
 mkdir -p "$INERTIA_HOME/config"
 
-echo "Downloading CLI..."
-curl -sf https://raw.githubusercontent.com/sazid-alam/Inertia/main/inertia-cli/inertia.py -o "$INERTIA_HOME/bin/inertia"
+echo "Copying CLI..."
+cp inertia-cli/inertia.py "$INERTIA_HOME/bin/inertia"
 chmod +x "$INERTIA_HOME/bin/inertia"
 
-echo "Downloading pre-push hook..."
-curl -sf https://raw.githubusercontent.com/sazid-alam/Inertia/main/inertia-cli/pre-push -o "$INERTIA_HOME/hooks/pre-push"
+echo "Copying pre-push hook..."
+cp inertia-cli/pre-push "$INERTIA_HOME/hooks/pre-push"
 chmod +x "$INERTIA_HOME/hooks/pre-push"
 
 # Add to PATH
