@@ -1,3 +1,5 @@
+import { useState } from 'react'
+import { clearLockout } from '../../api/dashboard'
 import type { StudentStatus } from '../../types'
 import { formatSolveTime, formatTimestamp } from '../../utils/format'
 import { AttemptTimeline } from './AttemptTimeline'
@@ -5,9 +7,26 @@ import { AttemptTimeline } from './AttemptTimeline'
 interface StudentDrawerProps {
   student: StudentStatus
   onClose: () => void
+  onLockoutCleared: (studentId: string) => void
 }
 
-export function StudentDrawer({ student, onClose }: StudentDrawerProps) {
+export function StudentDrawer({ student, onClose, onLockoutCleared }: StudentDrawerProps) {
+  const [clearing, setClearing] = useState(false)
+  const [clearError, setClearError] = useState<string | null>(null)
+
+  const handleClearLockout = async () => {
+    setClearing(true)
+    setClearError(null)
+    try {
+      await clearLockout(student.student_id)
+      onLockoutCleared(student.student_id)
+    } catch {
+      setClearError('Failed to clear lockout. Try again.')
+    } finally {
+      setClearing(false)
+    }
+  }
+
   return (
     <aside className="fixed inset-y-0 right-0 z-40 w-full max-w-md overflow-y-auto border-l border-slate-200 bg-white p-4 shadow-2xl">
       <div className="mb-4 flex items-start justify-between">
@@ -36,6 +55,28 @@ export function StudentDrawer({ student, onClose }: StudentDrawerProps) {
           <p className="text-lg font-semibold">{student.failed_count}</p>
         </div>
       </div>
+
+      {student.lockout_seconds > 0 && (
+        <div className="mt-4 rounded border border-amber-300 bg-amber-50 p-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold text-amber-800">Locked out</p>
+              <p className="text-xs text-amber-700">{student.lockout_seconds}s remaining</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => { void handleClearLockout() }}
+              disabled={clearing}
+              className="rounded-md border border-amber-400 bg-white px-3 py-1.5 text-xs font-semibold text-amber-800 transition hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {clearing ? 'Clearing...' : 'Clear lockout'}
+            </button>
+          </div>
+          {clearError && (
+            <p className="mt-2 text-xs text-red-600">{clearError}</p>
+          )}
+        </div>
+      )}
 
       <h3 className="mb-2 mt-5 text-sm font-semibold uppercase tracking-wide text-slate-500">
         Attempt timeline

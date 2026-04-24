@@ -1,6 +1,8 @@
 #!/bin/bash
 # INERTIA.EDU pre-push hook
 
+#only for push check
+
 set -u
 
 API_BASE="${INERTIA_API:-http://localhost:8000}"

@@ -78,3 +78,7 @@ export function get<T>(path: string) {
 export function post<T>(path: string, jsonBody: unknown) {
   return request<T>(path, { method: 'POST', jsonBody })
 }
+
+export function del<T>(path: string) {
+  return request<T>(path, { method: 'DELETE' })
+}

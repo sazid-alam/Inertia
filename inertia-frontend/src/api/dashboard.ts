@@ -1,4 +1,4 @@
-import { get } from './client'
+import { del, get } from './client'
 import type {
   AuthenticityResponse,
   DashboardResponse,
@@ -15,4 +15,8 @@ export function getLockouts() {
 
 export function getAuthenticity() {
   return get<AuthenticityResponse>('/dashboard/authenticity')
+}
+
+export function clearLockout(studentId: string) {
+  return del<{ cleared: boolean }>(`/dashboard/lockout/${studentId}`)
 }
