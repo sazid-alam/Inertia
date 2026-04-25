@@ -1,6 +1,6 @@
 # Inertia.edu — Judge's Evaluation Guide
 
-> **TL;DR** — Inertia intercepts `git push` and blocks it until the student proves they understand the code they just wrote. Everything is live. No installation required to evaluate.
+> **TL;DR** — Inertia intercepts `git push` and blocks it until the student proves they understand the code they just wrote. Everything is live. 
 
 ---
 
