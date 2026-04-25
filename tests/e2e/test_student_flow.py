@@ -41,6 +41,7 @@ def test_student_flow_init_commit_puzzle_verify(
     repo.mkdir()
     git(repo, "init")
     git(repo, "config", "user.email", "student@example.edu")
+    git(repo, "config", "user.name", "Inertia Student")
 
     def fake_cli_http(url: str, method: str = "GET", body: dict | None = None) -> dict:
         path = url.removeprefix("http://testserver")

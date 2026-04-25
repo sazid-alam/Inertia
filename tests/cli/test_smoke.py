@@ -18,6 +18,7 @@ def empty_repo(tmp_path: Path) -> Path:
     repo.mkdir()
     git(repo, "init")
     git(repo, "config", "user.email", "student@example.edu")
+    git(repo, "config", "user.name", "Inertia Student")
     return repo
 
 
