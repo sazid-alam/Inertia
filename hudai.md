@@ -21,3 +21,6 @@ wkhf
 
 
 efnr
+
+
+debugging0
