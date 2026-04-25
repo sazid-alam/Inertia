@@ -24,7 +24,6 @@ CS education has a copy-paste problem. Students can submit working code they don
 
 | Role | URL |
 |---|---|
-| 🎓 Student puzzle page | **[inertia-tau.vercel.app/student](https://inertia-tau.vercel.app/student)** |
 | 👩‍🏫 Instructor dashboard | **[inertia-tau.vercel.app/dashboard](https://inertia-tau.vercel.app/dashboard)** |
 | 🔌 REST API (health) | **[inertia-production-e090.up.railway.app/health](https://inertia-production-e090.up.railway.app/health)** |
 | 📖 Interactive API docs | **[inertia-production-e090.up.railway.app/docs](https://inertia-production-e090.up.railway.app/docs)** |
