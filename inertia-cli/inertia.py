@@ -180,7 +180,7 @@ if [ -z "$TOKEN_ID" ]; then
     exit 1
 fi
 
-PUZZLE_URL="${FRONTEND_URL}/puzzle?token=${TOKEN_ID}"
+PUZZLE_URL="${FRONTEND_URL}/student?token=${TOKEN_ID}"
 
 echo ""
 echo "========================================"

@@ -160,7 +160,7 @@ TOKEN_ID=$(printf '%s' "$PUZZLE_RESPONSE" | run_python -c "import json,sys; prin
 TIMER=$(printf '%s' "$PUZZLE_RESPONSE" | run_python -c "import json,sys; print(json.load(sys.stdin).get('timer_seconds', 0))")
 
 FRONTEND_URL="${FRONTEND_URL:-https://inertia-tau.vercel.app}"
-PUZZLE_URL="${FRONTEND_URL}/puzzle?token=${TOKEN_ID}"
+PUZZLE_URL="${FRONTEND_URL}/student?token=${TOKEN_ID}"
 
 echo ""
 echo "========================================"
