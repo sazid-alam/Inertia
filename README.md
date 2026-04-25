@@ -30,6 +30,39 @@ CS education has a copy-paste problem. Students can submit working code they don
 
 ---
 
+## The Friction That Helps
+
+Most friction in software is accidental. A slow API. A clunky UI. A process that wasn't designed. That kind of friction should be removed.
+
+Inertia introduces **intentional friction** — friction with a purpose, placed at the moment of maximum relevance.
+
+Here is what makes it different from a quiz or a test:
+
+**It is contextual.** The puzzle is generated from the student's actual diff. Not a generic recursion question — a question about *this function*, *these variables*, *this return value*. It cannot be googled. It cannot be copy-pasted. It requires reading the code that was just written.
+
+**It is immediate.** The checkpoint arrives at the exact second after the student wrote the code — not days later during a code review, not at the end of the semester in an exam. The code is still live in their working memory. The question lands when it can actually teach.
+
+**It is proportional.** A three-line bug fix passes through silently. A recursive algorithm with four levels of nesting triggers a puzzle. The system doesn't punish productivity — it gates complexity.
+
+**It cannot be skipped passively.** A student who doesn't understand their own code will fail the puzzle and enter a short reflection period before they can push again. Not a lockout. Not a punishment. Just five minutes of forced re-engagement with what they wrote.
+
+**It is honest.** The system doesn't try to catch cheaters. It tries to manufacture the conditions under which a student is most likely to actually learn. Those are different goals, and Inertia only pursues the second one.
+
+---
+
+## What the Instructor Sees
+
+While the student is at the gate, the instructor has a live view of everything:
+
+- Every student's last puzzle result and how long it took to solve
+- Active reflection periods with time remaining — and a manual override if needed
+- Authenticity flags for suspiciously fast answers or implausible patterns
+- A concept heatmap showing which topics (recursion, dynamic programming, graphs, trees) the class is struggling with in real time
+
+The dashboard is not a surveillance tool. It is a signal — a way for instructors to see which concepts need more class time before the final exam, not after.
+
+---
+
 ## How It Works
 
 ```
