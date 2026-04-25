@@ -1,5 +1,4 @@
-LOCKOUT_SCHEDULE_SECONDS = [0, 120, 600, 1800, 3600]
-
+LOCKOUT_SCHEDULE_SECONDS = [0, 120, 120, 120, 120]
 
 def lockout_seconds_for_failures(failed_count: int) -> int:
     index = min(max(failed_count, 0), len(LOCKOUT_SCHEDULE_SECONDS) - 1)
