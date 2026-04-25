@@ -61,6 +61,15 @@ export function HowItWorksPage() {
   const term = Scene1Terminal()
   const termStartedRef = useRef(false)
 
+  function scrollToScene(i: number) {
+    const el = scrollyRef.current
+    if (!el) return
+    const total = el.offsetHeight - window.innerHeight
+    // center of each scene bucket + small nudge so floor() lands on i
+    const target = el.offsetTop + (i / 5) * total + total / 10
+    window.scrollTo({ top: target, behavior: 'smooth' })
+  }
+
   useEffect(() => {
     const onScroll = () => {
       const el = scrollyRef.current
@@ -201,12 +210,21 @@ export function HowItWorksPage() {
               // SEQUENCE
             </div>
             {STEPS.map((step, i) => (
-              <div key={i} style={{
-                padding: '20px 24px', borderBottom: '1px solid var(--paper-line)',
-                opacity: activeScene === i ? 1 : 0.28,
-                transition: 'opacity 0.35s ease',
-                cursor: 'default',
-              }}>
+              <button
+                key={i}
+                type="button"
+                onClick={() => scrollToScene(i)}
+                style={{
+                  width: '100%', textAlign: 'left', background: 'none', border: 'none',
+                  padding: '20px 24px', borderBottom: '1px solid var(--paper-line)',
+                  opacity: activeScene === i ? 1 : 0.28,
+                  transition: 'opacity 0.35s ease, background 0.15s',
+                  cursor: 'pointer',
+                  fontFamily: 'var(--ui)',
+                }}
+                onMouseEnter={e => { if (activeScene !== i) (e.currentTarget as HTMLElement).style.opacity = '0.65' }}
+                onMouseLeave={e => { if (activeScene !== i) (e.currentTarget as HTMLElement).style.opacity = '0.28' }}
+              >
                 <div style={{ fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: activeScene === i ? 'var(--caution-deep)' : 'var(--ink-muted)' }}>
                   {step.n} / 05
                 </div>
@@ -215,7 +233,7 @@ export function HowItWorksPage() {
                 {activeScene === i && (
                   <div style={{ marginTop: 10, height: 2, background: 'var(--ink)', width: '40%' }} />
                 )}
-              </div>
+              </button>
             ))}
             <div style={{ flex: 1, borderBottom: '1px solid var(--paper-line)' }} />
             <div style={{ padding: '16px 24px', fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--ink-muted)' }}>
