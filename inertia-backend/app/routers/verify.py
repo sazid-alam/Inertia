@@ -5,6 +5,7 @@ from fastapi import APIRouter, HTTPException, Header
 
 from app.models import DifficultyLevel, VerifyRequest, VerifyResponse
 from app.services.ast_parser import get_timer_seconds
+from app.services.puzzle_factory import evaluate_answer_with_gemini
 from app.services.jwt_service import sign_jwt, verify_jwt
 from app.storage.store import (
     add_student_to_project,
@@ -21,7 +22,7 @@ router = APIRouter(prefix="/verify", tags=["verify"])
 
 
 @router.post("", response_model=VerifyResponse)
-def verify_answer(req: VerifyRequest) -> VerifyResponse:
+async def verify_answer(req: VerifyRequest) -> VerifyResponse:
     puzzle = load_puzzle(req.token_id)
     if not puzzle:
         raise HTTPException(status_code=404, detail="Puzzle token expired or not found.")
@@ -49,9 +50,13 @@ def verify_answer(req: VerifyRequest) -> VerifyResponse:
         raise HTTPException(status_code=408, detail="Time expired. Puzzle token invalidated.")
 
     solve_time = max(0.0, time.time() - float(puzzle.get("issued_at", time.time())))
-    expected_answer = str(puzzle["answer"]).strip().lower()
-    submitted_answer = req.answer.strip().lower()
-    correct = submitted_answer == expected_answer
+    
+    correct = await evaluate_answer_with_gemini(
+        setup=puzzle.get("setup", ""),
+        question=puzzle.get("question", ""),
+        expected_answer=str(puzzle.get("answer", "")).strip(),
+        student_answer=req.answer.strip()
+    )
 
     concept = puzzle.get("concept", "OTHER")
     entry = record_attempt(

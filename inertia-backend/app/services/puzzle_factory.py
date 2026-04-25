@@ -177,3 +177,47 @@ async def generate_puzzle(
         puzzle = get_fallback_puzzle(difficulty)
         puzzle["setup"] = f"GEMINI ERROR -> {error_msg} | {puzzle.get('setup')}"
         return _issue_puzzle(puzzle, fc_score, difficulty, student_id, project_id, metadata)
+
+async def evaluate_answer_with_gemini(
+    setup: str,
+    question: str,
+    expected_answer: str,
+    student_answer: str
+) -> bool:
+    student_clean = student_answer.strip().lower()
+    expected_clean = expected_answer.strip().lower()
+    
+    if student_clean == expected_clean:
+        return True
+        
+    client = _get_client()
+    if client is None:
+        return student_clean == expected_clean
+        
+    prompt = f"""You are an exact verifier for a CS code execution puzzle.
+Setup: {setup}
+Question: {question}
+Expected Answer: {expected_answer}
+Student Answer: {student_answer}
+
+Is the student's answer logically and factually correct based completely on the Expected Answer? 
+Disregard formatting, extra words out of order (if they still mean the same thing), different spelling, or extra punctuation.
+The student might have answered correctly but without exact string matching (e.g. "5 and 3" vs "5, 3" vs "5,3").
+
+Reply internally with either YES or NO, absolutely nothing else.
+YES means it is fundamentally correct. NO means it is essentially wrong.
+"""
+    try:
+        response = await asyncio.wait_for(
+            client.aio.models.generate_content(
+                model=settings.GEMINI_MODEL,
+                contents=prompt,
+            ),
+            timeout=settings.API_TIMEOUT_SECONDS,
+        )
+        return "yes" in response.text.lower()
+    except Exception as exc:
+        logger.warning(
+            "Gemini answer evaluation failed (%s); falling back to direct match.", exc
+        )
+        return student_clean == expected_clean
