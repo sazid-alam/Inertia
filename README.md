@@ -271,5 +271,5 @@ Most "learning tools" sit beside a student's workflow. Inertia is **inside** it.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE)
 
