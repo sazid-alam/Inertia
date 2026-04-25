@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getProjectDashboard, getProjectStudent, getStudentCommitReconciliation } from '../../api/projects'
 import type { CommitRecord, CommitReconciliationResponse, StudentProfile } from '../../types'
@@ -67,7 +67,7 @@ export function StudentDetailPage() {
   const [reconciliation, setReconciliation] = useState<CommitReconciliationResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  async function refresh() {
+  const refresh = useCallback(async () => {
     if (!projectId || !studentId) return
 
     setError(null)
@@ -89,11 +89,11 @@ export function StudentDetailPage() {
       const handled = handleApiError(err)
       setError(handled.inlineMessage ?? handled.toastMessage)
     }
-  }
+  }, [projectId, studentId])
 
   useEffect(() => {
     void refresh()
-  }, [projectId, studentId])
+  }, [refresh])
 
   const sortedCommits = useMemo(
     () => commits.slice().sort((a, b) => b.timestamp - a.timestamp),

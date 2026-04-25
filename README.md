@@ -124,8 +124,10 @@ Instructors create a project and share a 6-character join code. Students run `in
 
 ```bash
 # 1. Install the CLI (one-time, per machine)
-curl -fsSL https://inertia-production-e090.up.railway.app/install | bash
-source ~/.bashrc   # or restart your terminal
+pipx install inertia-edu
+
+# Alternative if pipx is unavailable:
+pip install inertia-edu
 
 # 2. In your assignment repo (must be empty — before your first commit)
 inertia init
@@ -143,6 +145,8 @@ git add . && git commit -m "implement BFS" && git push
 ```bash
 inertia status    # show current repo config
 inertia doctor    # check hook + config are installed
+inertia repair    # reinstall the git hook if it is deleted or corrupted
+inertia update    # upgrade the installed CLI package
 ```
 
 ### For Instructors
@@ -185,7 +189,8 @@ inertia doctor    # check hook + config are installed
 |---|---|
 | `inertia-backend/` | FastAPI service: audit, puzzle generation, verify, dashboard, JWT, projects |
 | `inertia-frontend/` | React + TypeScript + Vite + Tailwind: student puzzle page, instructor dashboard |
-| `inertia-cli/` | `inertia.py` (single-file CLI + `inertia init/status/doctor`) and `pre-push` hook |
+| `inertia_cli/` | Installable Python package that exposes the `inertia` console command |
+| `inertia-cli/` | Bootstrap-compatible CLI source and platform hook templates |
 | `install.sh` | One-liner bootstrap: copies CLI + hook to `~/.inertia/`, adds to PATH |
 
 ---

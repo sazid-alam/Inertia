@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getProjectDashboard } from '../../api/projects'
 import { DifficultyMatrix } from '../../components/dashboard/DifficultyMatrix'
@@ -25,7 +25,7 @@ export function ProjectDetailPage() {
   const [data, setData] = useState<ProjectDashboardResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  async function refresh() {
+  const refresh = useCallback(async () => {
     if (!projectId) return
     setError(null)
     try {
@@ -35,11 +35,11 @@ export function ProjectDetailPage() {
       const handled = handleApiError(err)
       setError(handled.inlineMessage ?? handled.toastMessage)
     }
-  }
+  }, [projectId])
 
   useEffect(() => {
     void refresh()
-  }, [projectId])
+  }, [refresh])
 
   const sortedCommits = useMemo(
     () => (data?.commits ?? []).slice().sort((a, b) => b.timestamp - a.timestamp),

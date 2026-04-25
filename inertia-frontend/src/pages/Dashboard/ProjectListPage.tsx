@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useMemo, useState } from 'react'
+import { type FormEvent, useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { createProject, listProjects } from '../../api/projects'
 import type { ProjectSummary } from '../../types'
@@ -21,7 +21,7 @@ export function ProjectListPage() {
     [projects],
   )
 
-  async function refreshProjects(nextTeacherId = teacherId) {
+  const refreshProjects = useCallback(async (nextTeacherId = teacherId) => {
     if (!nextTeacherId.trim()) {
       setProjects([])
       return
@@ -38,11 +38,11 @@ export function ProjectListPage() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [teacherId])
 
   useEffect(() => {
     void refreshProjects()
-  }, [])
+  }, [refreshProjects])
 
   async function handleCreateProject(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()

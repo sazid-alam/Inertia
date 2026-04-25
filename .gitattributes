@@ -1,0 +1,7 @@
+* text=auto
+*.py text eol=lf
+*.sh text eol=lf
+*.md text eol=lf
+.gitattributes text eol=lf
+inertia-cli/pre-push text eol=lf
+inertia-cli/pre-push.py text eol=lf

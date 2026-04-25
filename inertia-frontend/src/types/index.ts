@@ -117,7 +117,7 @@ export interface ProjectLookupResponse {
   join_code: string
 }
 
-export interface ProjectCreateResponse extends ProjectSummary {}
+export type ProjectCreateResponse = ProjectSummary
 
 export interface ProjectJoinResponse {
   project_id: string

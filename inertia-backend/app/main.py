@@ -33,4 +33,4 @@ app.include_router(projects.router)
 
 @app.get("/health")
 def health() -> dict[str, str]:
-    return {"status": "inertia is running", "version": "2.0"}
+    return {"status": "ok", "version": app.version}
