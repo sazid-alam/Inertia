@@ -2,9 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ThemeToggle } from '../../components/common/ThemeToggle'
 
-/* ── Types ──────────────────────────────────────────────── */
-type TSeg = { t: string; c: string }
-
 /* ── Scene 1: Terminal with typing animation ────────────── */
 function Scene1Terminal() {
   const [cmdText, setCmdText] = useState('')
