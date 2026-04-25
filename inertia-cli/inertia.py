@@ -144,13 +144,21 @@ fi
 COMMIT_MSG_JSON=$(printf '%s' "$COMMIT_MSG" | run_python -c 'import json,sys; print(json.dumps(sys.stdin.read()))')
 COMMIT_HASH_JSON=$(printf '%s' "$COMMIT_HASH" | run_python -c 'import json,sys; print(json.dumps(sys.stdin.read()))')
 
-AUDIT_RESPONSE=$(curl -sf -X POST "$API_BASE/audit" \
-    -H "Content-Type: application/json" \
-    -d "{\"diff\": $DIFF_JSON, \"student_id\": \"$STUDENT_ID\", \"project_id\": \"$PROJECT_ID\", \"commit_hash\": $COMMIT_HASH_JSON, \"commit_message\": $COMMIT_MSG_JSON}")
+AUDIT_RESPONSE=$(curl -s -X POST \"$API_BASE/audit\" \\
+    -H \"Content-Type: application/json\" \\
+    -d \"{\\\"diff\\\": $DIFF_JSON, \\\"student_id\\\": \\\"$STUDENT_ID\\\", \\\"project_id\\\": \\\"$PROJECT_ID\\\", \\\"commit_hash\\\": $COMMIT_HASH_JSON, \\\"commit_message\\\": $COMMIT_MSG_JSON}\")
 
-if [ $? -ne 0 ] || [ -z "$AUDIT_RESPONSE" ]; then
-    echo "[INERTIA] Cannot reach server. Push allowed (offline mode)."
+if [ $? -ne 0 ] || [ -z \"$AUDIT_RESPONSE\" ]; then
+    echo \"[INERTIA] Cannot reach server. Push allowed (offline mode).\"
     exit 0
+fi
+
+# Check if the server returned an error array/message (e.g. 423 Locked Out)
+ERROR_DETAIL=$(printf '%s' \"$AUDIT_RESPONSE\" | run_python -c \"import json,sys; d=json.load(sys.stdin); print(d.get('detail', '')) if isinstance(d, dict) else print('')\" 2>/dev/null)
+if [ -n \"$ERROR_DETAIL\" ]; then
+    echo \"[INERTIA] $ERROR_DETAIL\"
+    echo \"[INERTIA] Push blocked.\"
+    exit 1
 fi
 
 FC_SCORE=$(printf '%s' "$AUDIT_RESPONSE" | run_python -c "import json,sys; print(json.load(sys.stdin).get('complexity_score', 0))")
